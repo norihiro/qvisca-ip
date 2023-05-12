@@ -2,7 +2,11 @@ Contributing
 ============
 
 Master copy of this project is hosted on GitHub:
-https://github.com/nemo42/libviscaqtui
+https://github.com/norihiro/qvisca-ip
+
+This project is forked from [another upstream project](https://github.com/nemo42/libviscaqtui) made by nemo42.
+I acknowledge their dedication to the project.
+I hope the development on this project will also be contributed to the upstream project.
 
 Anyone may contribute to this project.
 Contributions are licensed under GPLv2 and must be made with a
