@@ -6,33 +6,21 @@
 const uint8_t VISCA_POWER_ON = 2;
 const uint8_t VISCA_POWER_OFF = 3;
 const int VISCA_DIGITAL_EFFECT_LEVEL_FLASH_TRAIL_MAX = 0x18;
-const int VISCA_DIGITAL_EFFECT_LEVEL_LUMI_STILL_MAX =0x20;
-const int VISCA_AE_MODES[] =
-{
-    VISCA_AUTO_EXP_FULL_AUTO,
-    VISCA_AUTO_EXP_MANUAL,
-    VISCA_AUTO_EXP_SHUTTER_PRIORITY,
-    VISCA_AUTO_EXP_IRIS_PRIORITY,
-    VISCA_AUTO_EXP_GAIN_PRIORITY,
-    VISCA_AUTO_EXP_SHUTTER_AUTO,
-    VISCA_AUTO_EXP_IRIS_AUTO,
-    VISCA_AUTO_EXP_GAIN_AUTO,
-    VISCA_AUTO_EXP_BRIGHT
-};
+const int VISCA_DIGITAL_EFFECT_LEVEL_LUMI_STILL_MAX = 0x20;
+const int VISCA_AE_MODES[] = {
+    VISCA_AUTO_EXP_FULL_AUTO,     VISCA_AUTO_EXP_MANUAL,        VISCA_AUTO_EXP_SHUTTER_PRIORITY,
+    VISCA_AUTO_EXP_IRIS_PRIORITY, VISCA_AUTO_EXP_GAIN_PRIORITY, VISCA_AUTO_EXP_SHUTTER_AUTO,
+    VISCA_AUTO_EXP_IRIS_AUTO,     VISCA_AUTO_EXP_GAIN_AUTO,     VISCA_AUTO_EXP_BRIGHT};
 
 // Enable states of the sliders for the different AE modes.
 //                            Auto,  Man,  S Pri, I Pri, G Pri, S Aut, I Aut, G Aut, Bright
 const bool SHUTTER_ENABLED[] = {false, true, true, false, false, false, true, true, false};
-const bool IRIS_ENABLED[]    = {false, true, false, true, false, true, false, true, false};
-const bool GAIN_ENABLED[]    = {false, true, false, false, true, true, true, false, false};
-const bool BRIGHT_ENABLED[]  = {false, false, false, false, false, false, false, false, true};
+const bool IRIS_ENABLED[] = {false, true, false, true, false, true, false, true, false};
+const bool GAIN_ENABLED[] = {false, true, false, false, true, true, true, false, false};
+const bool BRIGHT_ENABLED[] = {false, false, false, false, false, false, false, false, true};
 
 CameraWindow::CameraWindow(QWidget *parent)
-    : QMainWindow(parent),
-      ui(new Ui::CameraWindow),
-      ttyDev("/dev/ttyUSB1"),
-      panSpeed(1),
-      tiltSpeed(1)
+    : QMainWindow(parent), ui(new Ui::CameraWindow), ttyDev("/dev/ttyUSB1"), panSpeed(1), tiltSpeed(1)
 {
     ui->setupUi(this);
     OpenInterface();
@@ -53,14 +41,14 @@ CameraWindow::~CameraWindow()
 void CameraWindow::OpenInterface()
 {
     int camera_num;
-    if (VISCA_open_serial(&interface, ttyDev)!=VISCA_SUCCESS) {
-        fprintf(stderr,"camera_ui: unable to open serial device %s\n",ttyDev);
+    if (VISCA_open_serial(&interface, ttyDev) != VISCA_SUCCESS) {
+        fprintf(stderr, "camera_ui: unable to open serial device %s\n", ttyDev);
         exit(1);
     }
 
-    interface.broadcast=0;
+    interface.broadcast = 0;
     VISCA_set_address(&interface, &camera_num);
-    camera.address=1;
+    camera.address = 1;
     VISCA_clear(&interface, &camera);
     VISCA_get_camera_info(&interface, &camera);
 }
@@ -72,13 +60,13 @@ void CameraWindow::CloseInterface()
 
     // read the rest of the data: (should be empty)
     ioctl(interface.port_fd, FIONREAD, &bytes);
-    if (bytes>0) {
+    if (bytes > 0) {
         fprintf(stderr, "ERROR: %d bytes not processed: ", bytes);
         read(interface.port_fd, &packet, bytes);
-        for (i=0;i<bytes;i++) {
-            fprintf(stderr,"%2x ",packet[i]);
+        for (i = 0; i < bytes; i++) {
+            fprintf(stderr, "%2x ", packet[i]);
         }
-        fprintf(stderr,"\n");
+        fprintf(stderr, "\n");
     }
     VISCA_close_serial(&interface);
 }
@@ -89,34 +77,32 @@ void CameraWindow::UpdateAESliders(int index)
     ui->irisSlider->setEnabled(IRIS_ENABLED[index]);
     ui->gainSlider->setEnabled(GAIN_ENABLED[index]);
     ui->brightSlider->setEnabled(BRIGHT_ENABLED[index]);
-    ui->backLightCompensationCheckBox->setEnabled(index  == 0);
+    ui->backLightCompensationCheckBox->setEnabled(index == 0);
 }
 
 void CameraWindow::on_cameraPowerButton_clicked()
 {
     uint8_t power = VISCA_POWER_OFF;
-//    VISCA_get_power(&interface, &camera, &power);
+    //    VISCA_get_power(&interface, &camera, &power);
     // TODO: Power off seems to wait forever for a response, only do power on
     VISCA_set_power(&interface, &camera, power == VISCA_POWER_ON ? VISCA_POWER_OFF : VISCA_POWER_ON);
 }
 
 void CameraWindow::on_cameraDisplayCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_datascreen_off(&interface, &camera);
         break;
     case Qt::Checked:
-            VISCA_set_datascreen_on(&interface, &camera);
+        VISCA_set_datascreen_on(&interface, &camera);
         break;
     }
 }
 
 void CameraWindow::on_cameraIrReceiveCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_irreceive_off(&interface, &camera);
         break;
@@ -263,8 +249,7 @@ void CameraWindow::on_exposureCompensationSlider_valueChanged(int value)
 
 void CameraWindow::on_exposureCompensationCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         ui->exposureCompensationSlider->setEnabled(false);
         VISCA_set_exp_comp_power(&interface, &camera, VISCA_POWER_OFF);
@@ -274,13 +259,11 @@ void CameraWindow::on_exposureCompensationCheckBox_stateChanged(int arg1)
         VISCA_set_exp_comp_power(&interface, &camera, VISCA_POWER_ON);
         break;
     }
-
 }
 
 void CameraWindow::on_backLightCompensationCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_backlight_comp(&interface, &camera, VISCA_POWER_OFF);
         break;
@@ -288,13 +271,11 @@ void CameraWindow::on_backLightCompensationCheckBox_stateChanged(int arg1)
         VISCA_set_backlight_comp(&interface, &camera, VISCA_POWER_ON);
         break;
     }
-
 }
 
 void CameraWindow::on_slowShutterAutoCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_slow_shutter_auto(&interface, &camera, VISCA_POWER_OFF);
         break;
@@ -302,7 +283,6 @@ void CameraWindow::on_slowShutterAutoCheckBox_stateChanged(int arg1)
         VISCA_set_slow_shutter_auto(&interface, &camera, VISCA_POWER_ON);
         break;
     }
-
 }
 
 void CameraWindow::on_wideModeComboBox_currentIndexChanged(int index)
@@ -317,8 +297,7 @@ void CameraWindow::on_pictureEffectComboBox_currentIndexChanged(int index)
 
 void CameraWindow::on_digitalEffectComboBox_currentIndexChanged(int index)
 {
-    switch (index)
-    {
+    switch (index) {
     case VISCA_DIGITAL_EFFECT_FLASH:
     case VISCA_DIGITAL_EFFECT_TRAIL:
         ui->digitalEffectLevelSpinBox->setMaximum(VISCA_DIGITAL_EFFECT_LEVEL_FLASH_TRAIL_MAX);
@@ -344,8 +323,7 @@ void CameraWindow::on_digitalEffectLevelSpinBox_valueChanged(int arg1)
 
 void CameraWindow::on_pictureFreezeCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_freeze(&interface, &camera, VISCA_POWER_OFF);
         break;
@@ -357,8 +335,7 @@ void CameraWindow::on_pictureFreezeCheckBox_stateChanged(int arg1)
 
 void CameraWindow::on_pictureMirrorCheckBox_stateChanged(int arg1)
 {
-    switch (arg1)
-    {
+    switch (arg1) {
     case Qt::Unchecked:
         VISCA_set_mirror(&interface, &camera, VISCA_POWER_OFF);
         break;

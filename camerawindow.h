@@ -11,7 +11,7 @@ class CameraWindow;
 class CameraWindow : public QMainWindow
 {
     Q_OBJECT
-    
+
 public:
     CameraWindow(QWidget *parent = 0);
     ~CameraWindow();
@@ -108,7 +108,7 @@ private:
     Ui::CameraWindow *ui;
     VISCAInterface_t interface;
     VISCACamera_t camera;
-    const char* ttyDev;
+    const char *ttyDev;
 
     unsigned int panSpeed;
     unsigned int tiltSpeed;
