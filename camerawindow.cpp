@@ -1,5 +1,3 @@
-#include <unistd.h>
-#include <sys/ioctl.h>
 #include "camerawindow.h"
 #include "ui_camerawindow.h"
 
@@ -19,17 +17,9 @@ const bool IRIS_ENABLED[] = {false, true, false, true, false, true, false, true,
 const bool GAIN_ENABLED[] = {false, true, false, false, true, true, true, false, false};
 const bool BRIGHT_ENABLED[] = {false, false, false, false, false, false, false, false, true};
 
-CameraWindow::CameraWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::CameraWindow), ttyDev("/dev/ttyUSB1"), panSpeed(1), tiltSpeed(1)
+CameraWindow::CameraWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::CameraWindow), panSpeed(1), tiltSpeed(1)
 {
     ui->setupUi(this);
-    OpenInterface();
-
-    // Init UI
-    ui->vendorLineEdit->setText(QString("0x%1").arg(QString::number(camera.vendor, 16), 4, '0'));
-    ui->rOMVerLineEdit->setText(QString("0x%1").arg(QString::number(camera.rom_version, 16), 4, '0'));
-    ui->modelLineEdit->setText(QString("0x%1").arg(QString::number(camera.model, 16), 4, '0'));
-    ui->socketLineEdit->setText(QString("0x%1").arg(QString::number(camera.socket_num, 16), 4, '0'));
 }
 
 CameraWindow::~CameraWindow()
@@ -38,16 +28,13 @@ CameraWindow::~CameraWindow()
     delete ui;
 }
 
-void CameraWindow::OpenInterface()
+void CameraWindow::OpenInterface(const char *host, int port)
 {
-    int camera_num;
-    if (VISCA_open_serial(&interface, ttyDev) != VISCA_SUCCESS) {
-        fprintf(stderr, "camera_ui: unable to open serial device %s\n", ttyDev);
+    if (VISCA_open_udp(&interface, host, port) != VISCA_SUCCESS) {
+        fprintf(stderr, "camera_ui: unable to the host %s port %d\n", host, port);
         exit(1);
     }
 
-    interface.broadcast = 0;
-    VISCA_set_address(&interface, &camera_num);
     camera.address = 1;
     VISCA_clear(&interface, &camera);
     VISCA_get_camera_info(&interface, &camera);
@@ -55,20 +42,7 @@ void CameraWindow::OpenInterface()
 
 void CameraWindow::CloseInterface()
 {
-    unsigned char packet[3000];
-    int i, bytes;
-
-    // read the rest of the data: (should be empty)
-    ioctl(interface.port_fd, FIONREAD, &bytes);
-    if (bytes > 0) {
-        fprintf(stderr, "ERROR: %d bytes not processed: ", bytes);
-        read(interface.port_fd, &packet, bytes);
-        for (i = 0; i < bytes; i++) {
-            fprintf(stderr, "%2x ", packet[i]);
-        }
-        fprintf(stderr, "\n");
-    }
-    VISCA_close_serial(&interface);
+    VISCA_close(&interface);
 }
 
 void CameraWindow::UpdateAESliders(int index)
@@ -78,6 +52,24 @@ void CameraWindow::UpdateAESliders(int index)
     ui->gainSlider->setEnabled(GAIN_ENABLED[index]);
     ui->brightSlider->setEnabled(BRIGHT_ENABLED[index]);
     ui->backLightCompensationCheckBox->setEnabled(index == 0);
+}
+
+void CameraWindow::on_connectButton_clicked()
+{
+    QString host;
+    int port = 52381;
+    auto host_port = ui->hostLineEdit->text().split(':');
+    if (host_port.size() >= 1)
+        host = host_port[0];
+    if (host_port.size() >= 2)
+        port = host_port[1].toInt();
+
+    OpenInterface(host.toStdString().c_str(), port);
+
+    ui->vendorLineEdit->setText(QString("0x%1").arg(QString::number(camera.vendor, 16), 4, '0'));
+    ui->rOMVerLineEdit->setText(QString("0x%1").arg(QString::number(camera.rom_version, 16), 4, '0'));
+    ui->modelLineEdit->setText(QString("0x%1").arg(QString::number(camera.model, 16), 4, '0'));
+    ui->socketLineEdit->setText(QString("0x%1").arg(QString::number(camera.socket_num, 16), 4, '0'));
 }
 
 void CameraWindow::on_cameraPowerButton_clicked()

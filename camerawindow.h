@@ -17,6 +17,8 @@ public:
     ~CameraWindow();
 
 private slots:
+    void on_connectButton_clicked();
+
     void on_cameraPowerButton_clicked();
 
     void on_cameraDisplayCheckBox_stateChanged(int arg1);
@@ -100,7 +102,7 @@ private slots:
     void on_memoryRecallButton_clicked();
 
 private:
-    void OpenInterface();
+    void OpenInterface(const char *host, int port);
     void CloseInterface();
     void UpdateAESliders(int index);
 
