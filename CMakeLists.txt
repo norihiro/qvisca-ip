@@ -27,7 +27,9 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/libvisca-ip/
 )
 
-install(
-    TARGETS qvisca-ip
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if(NOT WIN32)
+    install(
+	TARGETS qvisca-ip
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+endif()
