@@ -84,15 +84,29 @@ jobs:
               -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="$TEAM_ID"
               -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="${{ secrets.MACOS_SIGNING_APPLICATION_IDENTITY }}"
               -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE=Manual
+              -DBUNDLE_ID='net.nagater.app.qvisca-ip'
             )
           fi
 
           cmake -B build . \
             -G Xcode \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             "${cmake_opt_codesign[@]}"
 
-          cmake --build build
+          cmake --build build --config RelWithDebInfo
+
+      - name: Package
+        run: |
+          zipfile=$PWD/qvisca-ip.zip
+          cd build/RelWithDebInfo
+          zip -r $zipfile *.app
+
+          xcrun notarytool submit $zipfile --keychain-profile AC_PASSWORD --wait
+          xcrun stapler staple ./*.app/Contents/MacOS/*
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.artifactName }}
+          path: '*.zip'
 
   windows:
     runs-on: windows-2022
