@@ -15,7 +15,6 @@ add_executable(qvisca-ip
 )
 
 target_link_libraries(qvisca-ip
-	PRIVATE
 	visca
 	Qt6::Core
 	Qt6::Widgets
