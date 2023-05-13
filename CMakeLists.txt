@@ -30,6 +30,7 @@ target_include_directories(qvisca-ip
 
 if(WIN32)
     set_target_properties(qvisca-ip PROPERTIES WIN32_EXECUTABLE ON)
+    add_definitions("-DOS_WINDOWS")
 else()
     # Linux and macOS
     install(
