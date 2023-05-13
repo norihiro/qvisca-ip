@@ -28,7 +28,10 @@ target_include_directories(qvisca-ip
 	libvisca-ip/
 )
 
-if(NOT WIN32)
+if(WIN32)
+    set_target_properties(qvisca-ip PROPERTIES WIN32_EXECUTABLE ON)
+else()
+    # Linux and macOS
     install(
 	TARGETS qvisca-ip
 	DESTINATION ${CMAKE_INSTALL_BINDIR}
