@@ -54,7 +54,7 @@ void CameraWindow::OpenInterface(const char *host, int port)
         if (VISCA_get_camera_info(&iface, &camera) != VISCA_SUCCESS)
             return VISCA_FAILURE;
 
-        QMetaObject::invokeMethod(this, "on_visca_connected");
+        QMetaObject::invokeMethod(this, "visca_connected");
 
         return VISCA_SUCCESS;
     });
@@ -82,7 +82,7 @@ void CameraWindow::on_connectButton_clicked()
     OpenInterface(host.toStdString().c_str(), port);
 }
 
-void CameraWindow::on_visca_connected()
+void CameraWindow::visca_connected()
 {
     ui->vendorLineEdit->setText(QString("0x%1").arg(QString::number(camera.vendor, 16), 4, '0'));
     ui->rOMVerLineEdit->setText(QString("0x%1").arg(QString::number(camera.rom_version, 16), 4, '0'));
