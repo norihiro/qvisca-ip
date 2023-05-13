@@ -134,6 +134,17 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --config RelWithDebInfo -j 4
 
+      - name: Package
+        run: |
+          mkdir release
+          cp build/RelWithDebInfo/qvisca-ip.exe release/
+          cp $(find ${{env.Qt6_Dir}} \
+            -name Qt6Widgets.dll -o \
+            -name Qt6Gui.dll -o \
+            -name Qt6Core.dll ) release/
+          cd release
+          zip qvisca-ip.zip '*.*'
+
       - uses: actions/upload-artifact@v3
         with:
           path: 'build/RelWithDebInfo/qvisca-ip.exe'
