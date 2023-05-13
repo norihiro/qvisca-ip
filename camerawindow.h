@@ -1,6 +1,12 @@
 #ifndef CAMERAWINDOW_H
 #define CAMERAWINDOW_H
 
+#include <thread>
+#include <mutex>
+#include <list>
+#include <queue>
+#include <condition_variable>
+#include <stdint.h>
 #include <QMainWindow>
 #include <visca/libvisca.h>
 
@@ -8,9 +14,16 @@ namespace Ui {
 class CameraWindow;
 }
 
+#define CTRL_FLG_PANTILT 1
+#define CTRL_FLG_ZOOM 2
+#define CTRL_FLG_REPLACE (CTRL_FLG_PANTILT | CTRL_FLG_ZOOM)
+
 class CameraWindow : public QMainWindow
 {
     Q_OBJECT
+
+    class QueueItem;
+    typedef std::function<uint32_t()> callback_t;
 
 public:
     CameraWindow(QWidget *parent = 0);
@@ -60,19 +73,37 @@ private slots:
     void on_memorySetButton_clicked();
     void on_memoryRecallButton_clicked();
 
+    void on_visca_connected();
+    void UpdateAESliders(int index);
+
 private:
     void OpenInterface(const char *host, int port);
     void CloseInterface();
-    void UpdateAESliders(int index);
+
+    void StartThread();
+    void StopThread();
+    void ThreadLoop();
+    void InsertItem(uint32_t flags, callback_t callback);
 
 private:
     Ui::CameraWindow *ui;
     VISCAInterface_t interface;
     VISCACamera_t camera;
-    const char *ttyDev;
+    bool camera_valid = false;
+    std::list<QueueItem> camera_queue;
+
+    std::thread camera_thread;
+    std::mutex camera_mutex;
+    std::condition_variable camera_cond;
+    volatile bool terminate = false;
 
     unsigned int panSpeed;
     unsigned int tiltSpeed;
+};
+
+struct CameraWindow::QueueItem {
+    uint32_t flags;
+    callback_t callback;
 };
 
 #endif // CAMERAWINDOW_H

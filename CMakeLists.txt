@@ -11,6 +11,7 @@ find_package(Qt6 COMPONENTS Core Widgets)
 add_executable(qvisca-ip
 	main.cpp
 	camerawindow.cpp
+        camerawindow-thread.cpp
 )
 
 target_link_libraries(qvisca-ip
