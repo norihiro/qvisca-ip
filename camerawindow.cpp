@@ -28,7 +28,9 @@ CameraWindow::CameraWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::Ca
 CameraWindow::~CameraWindow()
 {
     StopThread();
-    VISCA_close(&iface);
+    if (camera_valid) {
+        VISCA_close(&iface);
+    }
     delete ui;
 }
 
@@ -36,6 +38,10 @@ void CameraWindow::OpenInterface(const char *host, int port)
 {
     std::string host_str = host;
     InsertItem(0, [this, host_str, port]() {
+        if (camera_valid) {
+            VISCA_close(&iface);
+            camera_valid = false;
+        }
         if (VISCA_open_udp(&iface, host_str.c_str(), 52381) != VISCA_SUCCESS) {
             fprintf(stderr, "camera_ui: unable to the host %s port %d\n", host_str.c_str(), port);
             return VISCA_FAILURE;
