@@ -28,7 +28,7 @@ CameraWindow::CameraWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::Ca
 CameraWindow::~CameraWindow()
 {
     StopThread();
-    CloseInterface();
+    VISCA_close(&iface);
     delete ui;
 }
 
@@ -52,11 +52,6 @@ void CameraWindow::OpenInterface(const char *host, int port)
 
         return VISCA_SUCCESS;
     });
-}
-
-void CameraWindow::CloseInterface()
-{
-    CAMERA_THREAD({ return VISCA_close(&iface); });
 }
 
 void CameraWindow::UpdateAESliders(int index)
