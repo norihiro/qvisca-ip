@@ -112,9 +112,6 @@ jobs:
           xcrun stapler staple ./*.app
           zip -r $zipfile *.app
 
-      - uses: mxschmitt/action-tmate@v3
-        if: always()
-
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifactName }}
