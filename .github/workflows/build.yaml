@@ -104,12 +104,12 @@ jobs:
           submit_out=$(mktemp)
           xcrun notarytool submit $zipfile --keychain-profile AC_PASSWORD --wait | tee $submit_out
           id=$(awk '$1=="id:"{id=$2} END{print id}' $submit_out)
-          xcrun notarytool log "$id" --keychain-profile AC_PASSWORD "${pkg}.notarylog.json"
-          cat "${pkg}.notarylog.json"
+          xcrun notarytool log "$id" --keychain-profile AC_PASSWORD "notarylog.json"
+          cat "notarylog.json"
 
           rm $zipfile
           cd build/RelWithDebInfo
-          xcrun stapler staple ./*.app/Contents/MacOS/*
+          xcrun stapler staple ./*.app
           zip -r $zipfile *.app
 
       - uses: mxschmitt/action-tmate@v3
@@ -120,7 +120,7 @@ jobs:
           name: ${{ env.artifactName }}
           path: |
             '*.zip'
-            '*.notarylog.json'
+            'notarylog.json'
 
   windows:
     runs-on: windows-2022
