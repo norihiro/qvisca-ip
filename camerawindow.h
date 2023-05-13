@@ -73,7 +73,7 @@ private slots:
     void on_memorySetButton_clicked();
     void on_memoryRecallButton_clicked();
 
-    void on_visca_connected();
+    void visca_connected();
     void UpdateAESliders(int index);
 
 private:
