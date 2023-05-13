@@ -4,6 +4,9 @@ project(qvisca-ip VERSION 0.1.0)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE true)
+set(WITH_VISCA_SERIAL OFF)
+add_definitions("-DVISCA_API= ")
 add_subdirectory(libvisca-ip/visca)
 
 find_package(Qt6 COMPONENTS Core Widgets)
