@@ -77,9 +77,20 @@ jobs:
 
       - name: Configure and build
         run: |
+          cmake_opt_codesign=()
+          if [ "${{ github.event_name != 'pull_request' && steps.setup.outputs.haveCodesignIdent == 'true' }}" == true ]; then
+            TEAM_ID=$(echo "${{ secrets.MACOS_SIGNING_APPLICATION_IDENTITY }}" | sed 's/.*(\([A-Za-z0-9]*\))$/\1/')
+            cmake_opt_codesign=(
+              -DCMAKE_XCODE_ATTRIBUTE_DEVELOPMENT_TEAM="$TEAM_ID"
+              -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY="${{ secrets.MACOS_SIGNING_APPLICATION_IDENTITY }}"
+              -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE=Manual
+            )
+          fi
+
           cmake -B build . \
             -G Xcode \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            "${cmake_opt_codesign[@]}"
 
           cmake --build build
 
