@@ -20,9 +20,9 @@ target_link_libraries(qvisca-ip
 	Qt6::Core
 	Qt6::Widgets
 )
-target_include_directories(qvisca-ip
+include_directories(
 	PRIVATE
-	libvisca-ip/
+	${CMAKE_CURRENT_SOURCE_DIR}/libvisca-ip/
 )
 
 install(
