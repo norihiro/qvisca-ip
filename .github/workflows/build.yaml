@@ -1,6 +1,9 @@
 on:
   push:
     branches: ['*']
+    tags:
+      - 0.*
+      - 1.*
 
 jobs:
   linux:
