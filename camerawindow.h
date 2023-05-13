@@ -87,7 +87,7 @@ private:
 
 private:
     Ui::CameraWindow *ui;
-    VISCAInterface_t interface;
+    VISCAInterface_t iface;
     VISCACamera_t camera;
     bool camera_valid = false;
     std::list<QueueItem> camera_queue;
