@@ -78,7 +78,6 @@ private slots:
 
 private:
     void OpenInterface(const char *host, int port);
-    void CloseInterface();
 
     void StartThread();
     void StopThread();
