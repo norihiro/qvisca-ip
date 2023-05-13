@@ -103,6 +103,9 @@ jobs:
           xcrun notarytool submit $zipfile --keychain-profile AC_PASSWORD --wait
           xcrun stapler staple ./*.app/Contents/MacOS/*
 
+      - uses: mxschmitt/action-tmate@v3
+        if: always()
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifactName }}
@@ -129,8 +132,7 @@ jobs:
         run: |
           cmake -B build . \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --build build -j 4
-          cmake --install build --prefix $PWD/release
+          cmake --build build --config RelWithDebInfo -j 4
 
       - uses: actions/upload-artifact@v3
         with:
