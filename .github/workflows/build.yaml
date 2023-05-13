@@ -1,0 +1,112 @@
+on:
+  push: 
+    branches: ['*']
+
+jobs:
+  linux:
+    runs-on: 'ubuntu-22.04'
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install qt6
+        run: |
+          sudo apt update
+          sudo apt install build-essential qt6-base-dev qt6-base-private-dev libqt6svg6-dev qt6-wayland libgl1-mesa-dev
+
+      - name: Configure and build
+        run: |
+          cmake -B build .
+          cmake --build build
+
+  macos:
+    runs-on: macos-12
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup Environment
+        id: setup
+        run: |
+          set -e
+          if [[ '${{ secrets.MACOS_SIGNING_APPLICATION_IDENTITY }}' != '' && \
+                '${{ secrets.MACOS_SIGNING_INSTALLER_IDENTITY }}' != '' && \
+                '${{ secrets.MACOS_SIGNING_CERT }}' != '' ]]; then
+            echo 'haveCodesignIdent=true' >> $GITHUB_OUTPUT
+          else
+            echo 'haveCodesignIdent=false' >> $GITHUB_OUTPUT
+          fi
+          if [[ '${{ secrets.MACOS_NOTARIZATION_USERNAME }}' != '' && \
+                '${{ secrets.MACOS_NOTARIZATION_PASSWORD }}' != '' ]]; then
+            echo 'haveNotarizationUser=true' >> $GITHUB_OUTPUT
+          else
+            echo 'haveNotarizationUser=false' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Apple Developer Certificate
+        if: ${{ github.event_name != 'pull_request' && steps.setup.outputs.haveCodesignIdent == 'true' }}
+        uses: apple-actions/import-codesign-certs@253ddeeac23f2bdad1646faac5c8c2832e800071
+        with:
+          keychain-password: ${{ github.run_id }}
+          p12-file-base64: ${{ secrets.MACOS_SIGNING_CERT }}
+          p12-password: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD }}
+
+      - name: Set Signing Identity
+        if: ${{ github.event_name != 'pull_request' && steps.setup.outputs.haveCodesignIdent == 'true' }}
+        run: |
+          set -e
+          TEAM_ID=$(echo "${{ secrets.MACOS_SIGNING_APPLICATION_IDENTITY }}" | sed 's/.*(\([A-Za-z0-9]*\))$/\1/')
+          xcrun notarytool store-credentials AC_PASSWORD \
+            --apple-id "${{ secrets.MACOS_NOTARIZATION_USERNAME }}" \
+            --team-id "$TEAM_ID" \
+            --password "${{ secrets.MACOS_NOTARIZATION_PASSWORD }}"
+
+      - uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.3.*'
+
+      - name: Configure and build
+        run: |
+          cmake -B build . \
+            -G Xcode \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+          cmake --build build
+
+  windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.3.*'
+
+      - name: Configure and build
+        env:
+          CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        run: |
+          cmake -B build . \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build -j 4
+          cmake --install build --prefix $PWD/release
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: release/*

@@ -24,3 +24,8 @@ target_include_directories(qvisca-ip
 	PRIVATE
 	libvisca-ip/
 )
+
+install(
+    TARGETS qvisca-ip
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
