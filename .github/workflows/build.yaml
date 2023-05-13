@@ -151,8 +151,8 @@ jobs:
             -name Qt6Gui.dll -o \
             -name Qt6Core.dll ) release/
           cd release
-          zip qvisca-ip.zip '*.*'
+          7z a qvisca-ip.zip '*.*'
 
       - uses: actions/upload-artifact@v3
         with:
-          path: 'build/RelWithDebInfo/qvisca-ip.exe'
+          path: qvisca-ip.zip
