@@ -99,9 +99,18 @@ jobs:
           zipfile=$PWD/qvisca-ip.zip
           cd build/RelWithDebInfo
           zip -r $zipfile *.app
+          cd -
 
-          xcrun notarytool submit $zipfile --keychain-profile AC_PASSWORD --wait
+          submit_out=$(mktemp)
+          xcrun notarytool submit $zipfile --keychain-profile AC_PASSWORD --wait | tee $submit_out
+          id=$(awk '$1=="id:"{id=$2} END{print id}' $submit_out)
+          xcrun notarytool log "$id" --keychain-profile AC_PASSWORD "${pkg}.notarylog.json"
+          cat "${pkg}.notarylog.json"
+
+          rm $zipfile
+          cd build/RelWithDebInfo
           xcrun stapler staple ./*.app/Contents/MacOS/*
+          zip -r $zipfile *.app
 
       - uses: mxschmitt/action-tmate@v3
         if: always()
@@ -109,7 +118,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifactName }}
-          path: '*.zip'
+          path: |
+            '*.zip'
+            '*.notarylog.json'
 
   windows:
     runs-on: windows-2022
