@@ -3,7 +3,7 @@
 
 static void initialize()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(OS_WINDOWS)
     WSADATA wsaData;
     WSAStartup(2, &wsaData);
 #endif
