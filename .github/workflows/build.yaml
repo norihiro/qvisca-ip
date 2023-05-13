@@ -149,7 +149,7 @@ jobs:
         run: |
           mkdir release
           cp build/RelWithDebInfo/qvisca-ip.exe release/
-          cp $(find ${{env.Qt6_Dir}} \
+          cp $(find '${{env.Qt6_Dir}}' \
             -name Qt6Widgets.dll -o \
             -name Qt6Gui.dll -o \
             -name Qt6Core.dll ) release/
