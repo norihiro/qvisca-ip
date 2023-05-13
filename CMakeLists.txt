@@ -35,6 +35,7 @@ if(NOT WIN32)
 endif()
 
 if(APPLE AND NOT "${CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY}" STREQUAL "")
+    set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--timestamp")
     set_target_properties(qvisca-ip
 	PROPERTIES
 	BUNDLE ON
